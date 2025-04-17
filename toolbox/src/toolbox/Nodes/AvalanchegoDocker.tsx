@@ -192,70 +192,6 @@ export default function AvalanchegoDocker() {
             description="This will start a Docker container running an RPC or validator node that tracks your subnet."
         >
             <div className="space-y-4">
-                <div className="mb-4">
-                    This command will start a Docker container running an RPC or validator node that tracks your subnet.
-                </div>
-
-                <Input
-                    label="Subnet ID"
-                    value={subnetId}
-                    onChange={setSubnetID}
-                    placeholder="Create a subnet to generate a subnet ID"
-                />
-
-                <Select
-                    label="Node Type"
-                    value={isRPC}
-                    onChange={(value) => setIsRPC(value as "true" | "false")}
-                    options={[
-                        { value: "false", label: "Validator Node" },
-                        { value: "true", label: "RPC Node" },
-                    ]}
-                />
-
-                {isRPC === "true" && (
-                    <>
-                        <Select
-                            label="Enable Debug & Trace"
-                            value={enableDebugTrace}
-                            onChange={(value) => setEnableDebugTrace(value as "true" | "false")}
-                            options={[
-                                { value: "false", label: "Disabled" },
-                                { value: "true", label: "Enabled" },
-                            ]}
-                        />
-
-                        {enableDebugTrace === "true" && (
-                            <Input
-                                label="Chain ID"
-                                value={chainID}
-                                onChange={setChainID}
-                                placeholder="Enter Chain ID"
-                            />
-                        )}
-                    </>
-                )}
-
-                {isRPC === "true" && (
-                    <Input
-                        label="Domain or IPv4 address for reverse proxy (optional)"
-                        value={domain}
-                        onChange={setDomain}
-                        placeholder="example.com  or 1.2.3.4"
-                        helperText="`curl checkip.amazonaws.com` to get your public IP address. Make sure 443 is open on your firewall."
-                    />
-                )}
-                {chainID && enableDebugTrace === "true" && isRPC === "true" && (
-                    <div className="mt-4">
-                        <h3 className="text-md font-medium mb-2">Debug & Trace Setup Command:</h3>
-                        <p className="text-sm mb-2">Note: Run this before starting the node.</p>
-                        <CodeHighlighter
-                            code={enableDebugNTraceCommand(chainID)}
-                            lang="bash"
-                        />
-                    </div>
-                )}
-
                 <div className="mt-4">
                     <h3 className="text-md font-medium mb-2">Docker Installation Command:</h3>
                     <p className="mb-4">
@@ -294,8 +230,71 @@ export default function AvalanchegoDocker() {
                     </p>
                 </div>
 
+                <div className="relative">
+                    <h3 className="text-md font-medium mb-2 mt-8">Node Setup Command:</h3>
+
+                    <Input
+                        label="Subnet ID"
+                        value={subnetId}
+                        onChange={setSubnetID}
+                        placeholder="Create a subnet to generate a subnet ID"
+                    />
+                    <p className="mt-8 mb-4">Select what kind of Node you want to set up:</p>
+                    <div className="flex items-center">
+                        <Tabs
+                            tabs={["Validator Node", "RPC Node"]}
+                            activeTab={isRPC === "false" ? "Validator Node" : "RPC Node"}
+                            setActiveTab={(tab) => setIsRPC(tab === "Validator Node" ? "false" : "true")}
+                        />
+                    </div>
+                </div>
+
+                {isRPC === "true" ? (
+                    <>
+                        <p>RPC nodes are not validators. They expose APIs for applications to interact with the blockchain and are necessary when building dApps or services that need to query or submit transactions to the network.</p>
+                        <Select
+                            label="Enable Debug & Trace"
+                            value={enableDebugTrace}
+                            onChange={(value) => setEnableDebugTrace(value as "true" | "false")}
+                            options={[
+                                { value: "false", label: "Disabled" },
+                                { value: "true", label: "Enabled" },
+                            ]}
+                        />
+
+                        {enableDebugTrace === "true" && (
+                            <Input
+                                label="Chain ID"
+                                value={chainID}
+                                onChange={setChainID}
+                                placeholder="Enter Chain ID"
+                            />
+                        )}
+
+                        <Input
+                            label="Domain or IPv4 address for reverse proxy (optional)"
+                            value={domain}
+                            onChange={setDomain}
+                            placeholder="example.com  or 1.2.3.4"
+                            helperText="`curl checkip.amazonaws.com` to get your public IP address. Make sure 443 is open on your firewall."
+                    />
+                    </>
+                ) : (
+                    <p>Validator Nodes participate in consensus and validates transactions. These should not be publicly accessible in production settings.</p>
+                )}
+
+                {chainID && enableDebugTrace === "true" && isRPC === "true" && (
+                    <div className="mt-4">
+                        <h3 className="text-md font-medium mb-2">Debug & Trace Setup Command:</h3>
+                        <p className="text-sm mb-2">Note: Run this before starting the node.</p>
+                        <CodeHighlighter
+                            code={enableDebugNTraceCommand(chainID)}
+                            lang="bash"
+                        />
+                    </div>
+                )}
+
                 <div className="mt-4">
-                    <h3 className="text-md font-medium mb-2">Node Setup Command:</h3>
                     <CodeHighlighter
                         code={rpcCommand}
                         lang="bash"
@@ -331,6 +330,17 @@ export default function AvalanchegoDocker() {
                         />
                     </div>
                 )}
+
+<div className="mt-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-md">
+                        <h3 className="text-md font-medium mb-2">Running Multiple Nodes on the same machine:</h3>
+                        <p>To run multiple validator nodes on the same machine, ensure each node has:</p>
+                        <ul className="list-disc pl-5 mt-1">
+                            <li>Unique container name (change <code>--name</code> parameter)</li>
+                            <li>Different ports (modify <code>AVAGO_HTTP_PORT</code> and <code>AVAGO_STAKING_PORT</code>)</li>
+                            <li>Separate data directories (change the local volume path <code>~/.avalanchego</code> to a unique directory)</li>
+                        </ul>
+                        <p className="mt-1">Example for second node: Use ports 9652/9653 (HTTP/staking), container name "avago2", and data directory "~/.avalanchego2"</p>
+                    </div>
             </div>
         </Container>
     );
