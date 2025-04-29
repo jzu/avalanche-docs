@@ -137,9 +137,16 @@ function Features(): React.ReactElement {
           </Link>
           <Link href="https://github.com/ava-labs/avalanche-starter-kit" className="rounded-xl border bg-fd-background p-4 shadow-lg transition-colors hover:bg-fd-accent">
             <Github />
+            <h3 className="font-semibold">Avalanche CLI</h3>
+            <p className="text-sm text-fd-muted-foreground">
+              Command-line interface for local development with L1s.
+            </p>
+          </Link>
+          <Link href="https://github.com/ava-labs/avalanche-starter-kit" className="rounded-xl border bg-fd-background p-4 shadow-lg transition-colors hover:bg-fd-accent">
+            <Github />
             <h3 className="font-semibold">Avalanche Starter Kit</h3>
             <p className="text-sm text-fd-muted-foreground">
-              Quickstart your journey into Avalanche with our Starter Kit.
+              Containerized Development Environment including Avalanche CLI, Foundry and our interoperability contract implementations.
             </p>
           </Link>
         </div>
