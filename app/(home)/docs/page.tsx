@@ -136,7 +136,7 @@ function Features(): React.ReactElement {
               Launch your EVM L1 with Docker and Core Wallet.
             </p>
           </Link>
-          <Link href="https://github.com/ava-labs/avalanche-starter-kit" className="rounded-xl border bg-fd-background p-4 shadow-lg transition-colors hover:bg-fd-accent">
+          <Link href="/docs/tooling/get-avalanche-cli" className="rounded-xl border bg-fd-background p-4 shadow-lg transition-colors hover:bg-fd-accent">
             <Terminal />
             <h3 className="font-semibold">Avalanche CLI</h3>
             <p className="text-sm text-fd-muted-foreground">
