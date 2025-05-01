@@ -190,7 +190,7 @@ const componentGroups: Record<string, ComponentType[]> = {
             walletRequired: "not-required"
         },
     ],
-    "Deploy StakingManager": [
+    "Staking Manager Setup": [
         {
             id: "deployRewardCalculator",
             label: "Deploy Reward Calculator",
