@@ -90,18 +90,10 @@ export default function CreateChain() {
                 value={vmId}
                 onChange={setVmId}
                 placeholder="Enter VM ID"
-                helperText={`Default is ${EVM_VM_ID}`}
+                helperText={`For an L1 with an uncustomized EVM use ${EVM_VM_ID}`}
             />
 
             <GenesisInput label="Genesis Data (JSON)" value={localGenesisData} onChange={setLocalGenesisData} />
-
-            <div className="text-sm text-zinc-600 dark:text-zinc-400">
-                Open the{" "}
-                <a href="https://build.avax.network/tools/l1-toolbox#genesisBuilder" className="text-primary hover:text-primary/80 dark:text-primary/90 dark:hover:text-primary/70">
-                    Genesis Builder tool
-                </a>{" "}
-                to generate custom genesis data.
-            </div>
 
             <Button onClick={handleCreateChain}
                 loading={isCreating} loadingText="Creating Chain...">
