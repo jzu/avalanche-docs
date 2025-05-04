@@ -54,7 +54,11 @@ const gweiToWei = (gwei: number): number => gwei * 1000000000;
 
 // --- Main Component --- 
 
-export default function GenesisBuilder() {
+type GenesisBuilderProps = {
+    initiallyExpandedSections?: SectionId[];
+  };
+
+export default function GenesisBuilder({ initiallyExpandedSections = ["chainParams"] }: GenesisBuilderProps) {
     const { genesisData, setGenesisData } = useCreateChainStore()();
     const { walletEVMAddress } = useWalletStore();
 
@@ -86,7 +90,7 @@ export default function GenesisBuilder() {
     const [activeTab, setActiveTab] = useState<string>("config");
     const [copied, setCopied] = useState(false);
     const [validationMessages, setValidationMessages] = useState<ValidationMessages>({ errors: {}, warnings: {} });
-    const [expandedSections, setExpandedSections] = useState<Set<SectionId>>(new Set());
+    const [expandedSections, setExpandedSections] = useState<Set<SectionId>>(new Set(initiallyExpandedSections || []));
     
     // Add a flag to control when genesis should be generated
     const [shouldGenerateGenesis, setShouldGenerateGenesis] = useState(false);
