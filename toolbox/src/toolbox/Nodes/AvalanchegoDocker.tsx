@@ -196,7 +196,6 @@ export default function AvalanchegoDocker() {
                 title="Node Setup with Docker"
                 description="This will start a Docker container running an RPC or validator node that tracks your L1."
             >
-
                 <Steps>
                     <Step>
                         <h3 className="text-xl font-bold mb-4">Docker Installation</h3>
@@ -266,7 +265,10 @@ export default function AvalanchegoDocker() {
                                 <h3 className="text-xl font-bold mb-4">Port Configuration</h3>
                                 <p>Make sure the following port{isRPC && 's'} are open:
                                     <ul>
-                                        {isRPC && <li><strong>9650</strong> (for the RPC endpoint)</li>}
+                                        {isRPC && <>
+                                            <li><strong>443</strong> (for the Reverse Proxy)</li>
+                                            <li><strong>9650</strong> (for the RPC endpoint)</li>
+                                        </>}
                                         <li><strong>9651</strong> (for the node-to-node communication)</li>
                                     </ul>
                                 </p>
