@@ -323,7 +323,7 @@ export default function AvalanchegoDocker() {
                                         <Input
                                             label="Domain or IPv4 address for reverse proxy (optional)"
                                             value={domain}
-                                            onChange={setDomain}
+                                            onChange={(newValue) => setDomain(newValue.trim())}
                                             placeholder="example.com  or 1.2.3.4"
                                             helperText="`curl checkip.amazonaws.com` to get your public IP address. Make sure 443 is open on your firewall."
                                         />
