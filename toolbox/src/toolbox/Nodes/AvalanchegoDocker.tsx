@@ -305,14 +305,18 @@ export default function AvalanchegoDocker() {
                                         <p className="mt-1">Example for second node: Use ports 9652/9653 (HTTP/staking), container name "avago2", and data directory "~/.avalanchego2"</p>
                                     </Accordion>
                                 </Accordions>
-
-                                <p>You can check the logs of the node with the following command:</p>
+                            </Step>
+                            <Step>
+                                <h3 className="text-xl font-bold">Wait for the Node to Bootstrap</h3>
+                                <p>Your node will now bootstrap and sync the P-Chain and your L1. This process should take a <strong>few minutes</strong>. You can follow the process by checking the logs with the following command:</p>
 
                                 <DynamicCodeBlock lang="bash" code="docker logs avago" />
 
-                                <p>The chain is done bootstrapping when you this endpoint returns the EVM chain ID:</p>
+                                <p> During the bootstrapping process the following command will return a <code>404 page not found</code> error.</p>
 
                                 <DynamicCodeBlock lang="bash" code={checkNodeCommand(chainId, "127.0.0.1:9650", false)} />
+
+                                <p> Once it the bootstrapping is complete it will return a repsonse like <code>{'\\{"jsonrpc":"2.0","id":1,"result":"..."}'}</code>.</p>
                             </Step>
                             {isRPC && (
                                 <>
