@@ -198,6 +198,10 @@ export default function AvalanchegoDocker() {
             >
                 <Steps>
                     <Step>
+                        <h3 className="text-xl font-bold mb-4">Set up Instance</h3>
+                        <p>Set up a linux server with any cloud provider, like AWS, GCP, Azure, or Digital Ocean. Low specs (e.g. 2 vCPUs, 4GB RAM,  20GB storage) are sufficient for basic tests. For more extensive test and production L1s use a larger instance with appropriate resources (e.g. 8 vCPUs, 16GB RAM, 1 TB storage).</p>
+                    </Step>
+                    <Step>
                         <h3 className="text-xl font-bold mb-4">Docker Installation</h3>
                         <p>Make sure you have Docker installed on your system. You can use the following commands to install it:</p>
 
