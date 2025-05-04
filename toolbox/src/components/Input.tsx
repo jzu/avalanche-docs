@@ -61,10 +61,7 @@ export function Input({
   suggestions,
   ...props
 }: InputProps) {
-  const [isFocused, setIsFocused] = useState(false)
   const [inputValue, setInputValue] = useState(props.value?.toString() || props.defaultValue?.toString() || "")
-
-  const showSuggestions = isFocused && inputValue === "" && suggestions && suggestions.length > 0
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
@@ -83,7 +80,7 @@ export function Input({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 mt-6">
       <label htmlFor={id} className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
         {label}
       </label>
@@ -94,11 +91,6 @@ export function Input({
             id={id}
             value={inputValue}
             onChange={handleChange}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => {
-              // Delay hiding suggestions to allow for clicks
-              setTimeout(() => setIsFocused(false), 150)
-            }}
             className={cn("flex-1", unit ? "pr-12" : "", button ? "rounded-r-none" : "", className)}
             error={error}
             {...props}
@@ -111,8 +103,9 @@ export function Input({
           </div>
         )}
 
-        {showSuggestions && (
-          <div className="absolute z-50 mt-1 w-full bg-white dark:bg-zinc-800 rounded-md shadow-lg border border-zinc-200 dark:border-zinc-700 max-h-60 overflow-auto">
+        {suggestions && (<>
+          <div className="text-xs mt-2">Suggestions:</div>
+          <div className="z-50 mt-1 w-full bg-white dark:bg-zinc-800 rounded-md border border-zinc-200 dark:border-zinc-700 max-h-60 overflow-auto">
             <div className="py-1">
               {suggestions.map((suggestion, index) => (
                 <div
@@ -126,7 +119,7 @@ export function Input({
               ))}
             </div>
           </div>
-        )}
+        </>)}
       </div>
 
       {error ? (
