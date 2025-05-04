@@ -80,7 +80,7 @@ export function Input({
   }
 
   return (
-    <div className="space-y-2 mt-6">
+    <div className="space-y-2 mb-6">
       <label htmlFor={id} className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
         {label}
       </label>
