@@ -90,13 +90,13 @@ export default function ConvertToL1() {
                     onChange={setValidators}
                     defaultAddress={pChainAddress}
                     label="Initial Validators"
-                    description="Specify the intial validator set for the L1 below. You need to add a least one validator. For each validator you need to specify NodeID, the consensus weight, the initial balance and an address or a multi-sig that can deactivate the validator and that receives its remaining balance. The sum of the initial balances of the validators need to be paid when issuing this transaction."
+                    description="Specify the intial validator set for the L1 below. You need to add a least one validator. If converting a pre-existing Subnet with validators, you must establish a completely new validator set for the L1 conversion. The existing Subnet validators cannot be transferred. For each new validator you need to specify NodeID, the consensus weight, the initial balance and an address or a multi-sig that can deactivate the validator and that receives its remaining balance. The sum of the initial balances of the validators need to be paid when issuing this transaction."
                 />
 
                 <Button
                     variant="primary"
                     onClick={handleConvertToL1}
-                    disabled={!managerAddress || validators.length === 0}
+                    disabled={!subnetId || !managerAddress || validators.length === 0}
                     loading={isConverting}
                 >
                     Convert to L1
