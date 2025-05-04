@@ -262,10 +262,10 @@ export const ConnectWallet = ({ children, required, extraElements }: { children:
             {walletEVMAddress && (
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-md rounded-xl p-4 relative overflow-hidden">
                     {/* Core Wallet header */}
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mt-2 mb-6">
                         <div className="flex items-center space-x-2">
-                            <img src="/core-logo.svg" alt="Core Logo" className="h-10 w-25 mt-1 mb-1 dark:hidden" />
-                            <img src="/core-logo-dark.svg" alt="Core Logo" className="h-10 w-25 mt-1 mb-1 hidden dark:block" />
+                            <img src="/core-logo.svg" alt="Core Logo" className="h-10 w-auto mt-1 mb-1 dark:hidden" />
+                            <img src="/core-logo-dark.svg" alt="Core Logo" className="h-10 w-auto mt-1 mb-1 hidden dark:block" />
                         </div>
 
                         <div className="rounded-full overflow-hidden flex bg-zinc-100 dark:bg-zinc-800/70 p-0.5">
