@@ -113,18 +113,18 @@ export function Input({
 
         {showSuggestions && (
           <div className="absolute z-50 mt-1 w-full bg-white dark:bg-zinc-800 rounded-md shadow-lg border border-zinc-200 dark:border-zinc-700 max-h-60 overflow-auto">
-            <ul className="py-1">
+            <div className="py-1">
               {suggestions.map((suggestion, index) => (
-                <li
+                <div
                   key={index}
                   className="px-3 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer transition-colors text-left"
                   onClick={() => handleSuggestionClick(suggestion)}
                 >
                   <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{suggestion.title}</div>
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">{suggestion.description}</div>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         )}
       </div>
