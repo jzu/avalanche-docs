@@ -12,6 +12,7 @@ import { ResultField } from "../components/ResultField";
 import { ValidatorListInput } from "../../components/ValidatorListInput";
 import SelectChainId from "../components/SelectChainId";
 import SelectSubnetId from "../components/SelectSubnetId";
+import { Callout } from "fumadocs-ui/components/Callout";
 
 export default function ConvertToL1() {
     const {
@@ -78,7 +79,11 @@ export default function ConvertToL1() {
                     onChange={setManagerAddress}
                     placeholder="0x..."
                     type="text"
+                    helperText="The address of a validator manager or a proxy contract. The address must be a valid EVM address."
                 />
+                <Callout type="info">
+                    In the Genesis Builder an <a href="https://docs.openzeppelin.com/contracts/4.x/api/proxy" target="_blank">OpenZeppelin TransparentUpgradeableProxy</a> contract is pre-deployed at the address <code>0xfacade...</code>. This proxy can be pointed to a reference implementation or customized version of the <a href="https://github.com/ava-labs/icm-contracts/tree/main/contracts/validator-manager" target="_blank">validator manager contract</a>. Tools for the deployment of the reference implementations of validator manager contract are available in the <a href="http://build.avax.network/tools/l1-toolbox#deployValidatorManager" target="_blank">L1 Toolbox</a> for after the conversion.
+                </Callout>
                 
                 <ValidatorListInput 
                     validators={validators}
