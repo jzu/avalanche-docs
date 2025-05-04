@@ -12,7 +12,7 @@ import { ResultField } from "../components/ResultField";
 import { ValidatorListInput } from "../../components/ValidatorListInput";
 import SelectChainId from "../components/SelectChainId";
 import SelectSubnetId from "../components/SelectSubnetId";
-import { Callout } from "fumadocs-ui/components/Callout";
+import { Callout } from "fumadocs-ui/components/callout";
 
 export default function ConvertToL1() {
     const {
