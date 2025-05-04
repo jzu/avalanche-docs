@@ -61,6 +61,11 @@ export default function ConvertToL1() {
                     onChange={setSubnetId}
                     error={null}
                 />
+
+                <div>
+                    <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Validator Manager</h2>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">With the conversion of the Subnet to an L1 the validator set of the L1 will be managed by a validator manager contract. This contract can implement Proof-of-Authority, Proof-of-Stake or any custom logic to determine the validator set. The contract can be deployed on a blockchain of the L1, the C-Chain or any other blockchain in the Avalanche network.</p>
+                </div>
                 <SelectChainId
                     value={chainID}
                     onChange={setChainID}
@@ -80,7 +85,7 @@ export default function ConvertToL1() {
                     onChange={setValidators}
                     defaultAddress={pChainAddress}
                     label="Initial Validators"
-                    description="Add the validators that will form your L1 chain"
+                    description="Specify the intial validator set for the L1 below. You need to add a least one validator. For each validator you need to specify NodeID, the consensus weight, the initial balance and an address or a multi-sig that can deactivate the validator and that receives its remaining balance. The sum of the initial balances of the validators need to be paid when issuing this transaction."
                 />
 
                 <Button

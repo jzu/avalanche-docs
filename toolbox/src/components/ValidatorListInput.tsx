@@ -189,7 +189,7 @@ export function ValidatorListInput({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                          Validator Weight
+                          Consensus Weight
                         </label>
                         <input
                           type="number"
