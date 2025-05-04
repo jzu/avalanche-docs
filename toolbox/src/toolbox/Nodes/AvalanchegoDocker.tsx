@@ -17,6 +17,7 @@ import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 import { AddChainModal } from "../components/ConnectWalletToolbox/AddChainModal";
 import { useL1ListStore } from "../toolboxStore";
 import { Button } from "../../components/Button";
+import { ResultField } from "../components/ResultField";
 
 const generateDockerCommand = (subnets: string[], isRPC: boolean, networkID: number) => {
     const env: Record<string, string> = {
@@ -161,6 +162,7 @@ export default function AvalanchegoDocker() {
     const [subnetIdError, setSubnetIdError] = useState<string | null>(null);
     const [isAddChainModalOpen, setIsAddChainModalOpen] = useState<boolean>(false);
     const { addL1 } = useL1ListStore()();
+    const [chainAddedToWallet, setChainAddedToWallet] = useState<string | null>(null);
 
 
     useEffect(() => {
@@ -360,7 +362,10 @@ export default function AvalanchegoDocker() {
                                             <Button onClick={() => setIsAddChainModalOpen(true)} className="mt-4 w-48">Add to Wallet</Button>
                                             {isAddChainModalOpen && <AddChainModal
                                                 onClose={() => setIsAddChainModalOpen(false)}
-                                                onAddChain={addL1}
+                                                onAddChain={(chain) => { 
+                                                    addL1(chain); 
+                                                    setChainAddedToWallet(chain.name);
+                                                }}
                                                 allowLookup={false}
                                                 fixedRPCUrl={`https://${nipify(domain)}/ext/bc/${chainId}/rpc`}
                                             />}
@@ -373,8 +378,7 @@ export default function AvalanchegoDocker() {
 
                 </Steps>
 
-
-
+                {chainAddedToWallet && <ResultField label="Chain added to Wallet" value={chainAddedToWallet} showCheck />}
 
             </Container >
         </>
