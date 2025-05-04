@@ -311,7 +311,7 @@ export default function AvalanchegoDocker() {
                             {isRPC && (
                                 <>
                                     <Step>
-                                        <h3 className="text-xl font-bold mb-4">Set Up Reverse Proxy (optional)</h3>
+                                        <h3 className="text-xl font-bold mb-4">Set Up Reverse Proxy</h3>
                                         <p>To connect your wallet you need to be able to connect to the RPC via https. For testing purposes you can set up a reverse Proxy to achieve this.</p>
 
                                         <Input
