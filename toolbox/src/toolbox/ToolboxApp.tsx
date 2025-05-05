@@ -30,7 +30,7 @@ const componentGroups: Record<string, ComponentGroupType> = {
     'Create an L1': {
         academy: {
             text: "Learn about creating an L1",
-            link: "https://build.avax.network/academ/avalanche-fundamentals"
+            link: "https://build.avax.network/academy/avalanche-fundamentals"
         },
         components: [
             {
