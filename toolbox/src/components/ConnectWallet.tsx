@@ -303,8 +303,8 @@ export const ConnectWallet = ({ children, required, extraElements }: { children:
 
                     {/* Chain cards */}
                     <div className={`grid grid-cols-1 gap-4 items-center mb-4 ${(walletChainId === avalanche.id || walletChainId === avalancheFuji.id)
-                        ? 'md:grid-cols-[1fr_auto_1fr]'
-                        : 'md:grid-cols-2'
+                        ? 'md: grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
+                        : 'md: grid-cols-2'
                         }`}>
                         {/* L1 Chain Card */}
                         <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700 h-full">
