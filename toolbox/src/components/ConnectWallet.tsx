@@ -2,17 +2,24 @@
 
 import type React from "react"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { useErrorBoundary } from "react-error-boundary"
-import { Copy } from "lucide-react"
+import { Copy, RefreshCw } from "lucide-react"
 import { createCoreWalletClient } from "../coreViem"
 import { networkIDs } from "@avalabs/avalanchejs"
 import { useWalletStore } from "../lib/walletStore"
 import { WalletRequiredPrompt } from "./WalletRequiredPrompt"
 import { ConnectWalletPrompt } from "./ConnectWalletPrompt"
-import { RefreshOnMainnetTestnetChange } from "./RefreshOnMainnetTestnetChange"
+import { RemountOnWalletChange } from "./RemountOnWalletChange"
 import { avalanche, avalancheFuji } from "viem/chains"
 import InterchainTransfer from "./InterchainTransfer"
+
+const faucets = {
+    43113: "https://test.core.app/tools/testnet-faucet/?subnet=c&token=c",
+    173750: "https://test.core.app/tools/testnet-faucet/?subnet=echo&token=echo",
+    779672: "https://test.core.app/tools/testnet-faucet/?subnet=dispatch&token=dispatch"
+}
+const LOW_BALANCE_THRESHOLD = 0.5
 
 export const ConnectWallet = ({ children, required, extraElements }: { children: React.ReactNode; required: boolean; extraElements?: React.ReactNode }) => {
     const setWalletChainId = useWalletStore(state => state.setWalletChainId);
@@ -26,15 +33,19 @@ export const ConnectWallet = ({ children, required, extraElements }: { children:
     const pChainAddress = useWalletStore(state => state.pChainAddress);
     const walletChainId = useWalletStore(state => state.walletChainId);
     const setIsTestnet = useWalletStore(state => state.setIsTestnet);
-    const publicClient = useWalletStore(state => state.publicClient);
     const setEvmChainName = useWalletStore(state => state.setEvmChainName);
     const evmChainName = useWalletStore(state => state.evmChainName);
     const isTestnet = useWalletStore(state => state.isTestnet);
+    const updateAllBalances = useWalletStore(state => state.updateAllBalances);
+    const updatePChainBalance = useWalletStore(state => state.updatePChainBalance);
+    const updateL1Balance = useWalletStore(state => state.updateL1Balance);
+
 
     const [hasWallet, setHasWallet] = useState<boolean>(false)
     const [isClient, setIsClient] = useState<boolean>(false)
-    const [selectedL1Balance, setSelectedL1Balance] = useState<string>("0")
-    const [pChainBalance, setPChainBalance] = useState<string>("0")
+    const pChainBalance = useWalletStore(state => state.pChainBalance);
+    const l1Balance = useWalletStore(state => state.l1Balance);
+    const faucetUrl = faucets[walletChainId as keyof typeof faucets];
     const { showBoundary } = useErrorBoundary()
 
     // Set isClient to true once component mounts (client-side only)
@@ -42,56 +53,12 @@ export const ConnectWallet = ({ children, required, extraElements }: { children:
         setIsClient(true)
     }, [])
 
-    // Define balance fetching functions using useCallback
-    const fetchEVMBalance = useCallback(async () => {
-        if (!walletEVMAddress || !walletChainId || !publicClient) return;
-        setSelectedL1Balance("...");
-        try {
-            const l1Balance = await publicClient.getBalance({
-                address: walletEVMAddress as `0x${string}`,
-            });
-            setSelectedL1Balance((Number(l1Balance) / 1e18).toFixed(2));
-        } catch (l1Error) {
-            console.error(`Error fetching balance for ${walletChainId}:`, l1Error);
-            setSelectedL1Balance("?"); // Indicate error fetching balance
-        }
-    }, [walletEVMAddress, walletChainId, publicClient]);
-
-    const fetchPChainBalance = useCallback(async () => {
-        if (!pChainAddress || !coreWalletClient) return;
-        setPChainBalance("...");
-        try {
-            const pBalance = await coreWalletClient.getPChainBalance();
-            setPChainBalance((Number(pBalance) / 1e9).toFixed(2));
-        } catch (pChainError) {
-            console.error("Error fetching P-Chain balance:", pChainError);
-            setPChainBalance("?"); // Indicate error fetching balance
-        }
-    }, [pChainAddress, coreWalletClient]);
-
-    // Combined function to refetch both balances
-    const refetchBalances = useCallback(() => {
-        fetchEVMBalance();
-        fetchPChainBalance();
-    }, [fetchEVMBalance, fetchPChainBalance]);
-
     // Fetch initial EVM balance and set up polling
     useEffect(() => {
-        if (walletEVMAddress && walletChainId) {
-            fetchEVMBalance();
-            const interval = setInterval(fetchEVMBalance, 30000);
-            return () => clearInterval(interval);
+        if (walletEVMAddress && walletChainId && pChainAddress) {
+            updateAllBalances();
         }
-    }, [fetchEVMBalance, walletEVMAddress, walletChainId]); // Depend on the memoized fetch function
-
-    // Fetch initial P-Chain balance and set up polling
-    useEffect(() => {
-        if (pChainAddress && coreWalletClient) {
-            fetchPChainBalance();
-            const interval = setInterval(fetchPChainBalance, 30000);
-            return () => clearInterval(interval);
-        }
-    }, [fetchPChainBalance, pChainAddress, coreWalletClient]); // Depend on the memoized fetch function
+    }, [updateAllBalances, walletEVMAddress, walletChainId, pChainAddress]); // Depend on the memoized fetch function
 
 
     useEffect(() => {
@@ -316,8 +283,27 @@ export const ConnectWallet = ({ children, required, extraElements }: { children:
                                     <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full">Selected</span>
                                 )}
                             </div>
-                            <div className="text-2xl font-semibold text-zinc-800 dark:text-zinc-100 mb-2">
-                                {selectedL1Balance} {walletChainId === avalanche.id || walletChainId === avalancheFuji.id ? "AVAX" : "Tokens"}
+                            <div className="text-2xl font-semibold text-zinc-800 dark:text-zinc-100 mb-2 flex items-center">
+                                {l1Balance.toFixed(2)} {walletChainId === avalanche.id || walletChainId === avalancheFuji.id ? "AVAX" : "Tokens"}
+                                <button
+                                    onClick={updateL1Balance}
+                                    className="ml-2 p-1 rounded-md bg-zinc-100 dark:bg-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors"
+                                    title="Refresh balance"
+                                >
+                                    <RefreshCw className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
+                                </button>
+                                {faucetUrl && (
+                                    <button
+                                        onClick={() => window.open(faucetUrl, "_blank")}
+                                        className={`ml-2 px-2 py-1 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors ${l1Balance < LOW_BALANCE_THRESHOLD
+                                            ? "shimmer"
+                                            : ""
+                                            }`}
+                                        title="Open faucet"
+                                    >
+                                        Free tokens
+                                    </button>
+                                )}
                             </div>
                             {/* EVM Address inside the card */}
                             <div className="flex items-center justify-between">
@@ -336,7 +322,7 @@ export const ConnectWallet = ({ children, required, extraElements }: { children:
 
                         {/* Arrows between cards */}
                         {(walletChainId === avalanche.id || walletChainId === avalancheFuji.id) && (
-                            <InterchainTransfer onBalanceChanged={refetchBalances} />
+                            <InterchainTransfer glow={pChainBalance < LOW_BALANCE_THRESHOLD && l1Balance > LOW_BALANCE_THRESHOLD} />
                         )}
 
                         {/* P-Chain */}
@@ -345,7 +331,16 @@ export const ConnectWallet = ({ children, required, extraElements }: { children:
                                 <span className="text-zinc-600 dark:text-zinc-400 text-sm font-medium">P-Chain</span>
                                 <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full">Always Connected</span>
                             </div>
-                            <div className="text-2xl font-semibold text-zinc-800 dark:text-zinc-100 mb-2">{pChainBalance} AVAX</div>
+                            <div className="text-2xl font-semibold text-zinc-800 dark:text-zinc-100 mb-2 flex items-center">
+                                {pChainBalance.toFixed(2)} AVAX
+                                <button
+                                    onClick={updatePChainBalance}
+                                    className="ml-2 p-1 rounded-md bg-zinc-100 dark:bg-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors"
+                                    title="Refresh balance"
+                                >
+                                    <RefreshCw className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
+                                </button>
+                            </div>
                             <div className="flex items-center justify-between">
                                 <div className="font-mono text-xs text-zinc-700 dark:text-black bg-zinc-100 dark:bg-zinc-300 px-3 py-1.5 rounded-md overflow-x-auto shadow-sm border border-zinc-200 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-200 transition-colors flex-1 mr-2 truncate">
                                     {pChainAddress ? pChainAddress : "Loading..."}
@@ -368,9 +363,9 @@ export const ConnectWallet = ({ children, required, extraElements }: { children:
             )}
 
             {/* Children content */}
-            <RefreshOnMainnetTestnetChange>
+            <RemountOnWalletChange>
                 <div className="transition-all duration-300">{children}</div>
-            </RefreshOnMainnetTestnetChange>
+            </RemountOnWalletChange>
         </div>
     )
 }
