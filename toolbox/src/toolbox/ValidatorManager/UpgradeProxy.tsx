@@ -5,13 +5,13 @@ import { useSelectedL1, useViemChainStore } from "../toolboxStore";
 import { useErrorBoundary } from "react-error-boundary";
 import { useState, useEffect } from "react";
 import { Button } from "../../components/Button";
-import { Input } from "../../components/Input";
 import { Success } from "../../components/Success";
 import ProxyAdminABI from "../../../contracts/openzeppelin-4.9/compiled/ProxyAdmin.json";
-
 import { Container } from "../components/Container";
 import { useToolboxStore } from "../toolboxStore";
 import { getSubnetInfo } from "../../coreViem/utils/glacier";
+import { EVMAddressInput } from "../components/EVMAddressInput";
+import { Input } from "../../components/Input";
 
 // Storage slot with the admin of the proxy (following EIP1967)
 const ADMIN_SLOT = "0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103";
@@ -27,8 +27,8 @@ export default function UpgradeProxy() {
     const [isUpgrading, setIsUpgrading] = useState(false);
     const [currentImplementation, setCurrentImplementation] = useState<string | null>(null);
     const [desiredImplementation, setDesiredImplementation] = useState<string | null>(null);
-    const [contractError, setContractError] = useState<string | null>(null);
     const [proxySlotAdmin, setProxySlotAdmin] = useState<string | null>(null);
+    const [contractError, setContractError] = useState<string | undefined>();
     const viemChain = useViemChainStore();
 
     const [proxyAddress, setProxyAddress] = useState<string>("");
@@ -98,7 +98,7 @@ export default function UpgradeProxy() {
         try {
             if (!proxyAddress || !proxyAdminAddress) {
                 setCurrentImplementation(null);
-                setContractError(null);
+                setContractError("Proxy address and admin address are required");
                 return;
             }
 
@@ -110,10 +110,11 @@ export default function UpgradeProxy() {
             });
 
             setCurrentImplementation(implementation as string);
-            setContractError(null);
+            setContractError(undefined);
         } catch (error: unknown) {
             setCurrentImplementation(null);
-            setContractError("No contract found at Proxy Address");
+            const errorMessage = error instanceof Error ? error.message : "Failed to read current implementation";
+            setContractError(errorMessage);
             console.error(error);
         }
     }
@@ -151,26 +152,35 @@ export default function UpgradeProxy() {
             title="Upgrade Proxy Implementation"
             description="This will upgrade the proxy implementation to the desired implementation."
         >
-            <Input
+            <EVMAddressInput
                 label="Proxy Address"
                 value={proxyAddress}
                 onChange={setProxyAddress}
+                disabled={isUpgrading}
                 placeholder="Enter proxy address"
-                error={contractError}
             />
-            <Input
-                label="Proxy Admin Address"
-                value={proxyAdminAddress || ""}
-                onChange={(value: string) => setProxyAdminAddress(value as `0x${string}`)}
-                placeholder="Enter proxy admin address"
-                error={proxySlotAdmin && proxyAdminAddress !== proxySlotAdmin ?
-                    `Warning: Address doesn't match the admin in storage (${proxySlotAdmin})` : undefined}
-                button={proxySlotAdmin && proxySlotAdmin !== proxyAdminAddress ?
-                    <Button onClick={() => setProxyAdminAddress(proxySlotAdmin as `0x${string}`)} stickLeft>
-                        Use Storage Admin
-                    </Button> : undefined}
-            />
-            <Input
+            <div className="space-y-1">
+                <EVMAddressInput
+                    label="Proxy Admin Address"
+                    value={proxyAdminAddress || ""}
+                    onChange={(value: string) => setProxyAdminAddress(value as `0x${string}`)}
+                    placeholder="Enter proxy admin address"
+                    disabled={isUpgrading}
+                />
+                {proxySlotAdmin && proxySlotAdmin !== proxyAdminAddress && (
+                    <div className="flex justify-between items-center">
+                        <span className="text-sm text-yellow-600">Address doesn't match the admin in storage ({proxySlotAdmin})</span>
+                        <Button
+                            onClick={() => setProxyAdminAddress(proxySlotAdmin as `0x${string}`)}
+                            variant="secondary"
+                            size="sm"
+                        >
+                            Use Storage Admin
+                        </Button>
+                    </div>
+                )}
+            </div>
+            <EVMAddressInput
                 label="Desired Implementation"
                 value={desiredImplementation || ""}
                 onChange={(value: string) => setDesiredImplementation(value)}
@@ -180,6 +190,7 @@ export default function UpgradeProxy() {
                 label="Current Implementation"
                 value={currentImplementation || ""}
                 disabled
+                placeholder="Current implementation address will be shown here"
                 error={contractError}
             />
             <Button

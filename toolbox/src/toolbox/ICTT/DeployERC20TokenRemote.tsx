@@ -8,6 +8,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "../../components/Button";
 import { Success } from "../../components/Success";
 import { Input } from "../../components/Input";
+import { EVMAddressInput } from "../components/EVMAddressInput";
 import { createPublicClient, http } from "viem";
 import { Note } from "../../components/Note";
 import { utils } from "@avalabs/avalanchejs";
@@ -34,6 +35,7 @@ export default function DeployERC20TokenRemote() {
     const [tokenSymbol, setTokenSymbol] = useState("");
     const [tokenDecimals, setTokenDecimals] = useState("0");
     const [minTeleporterVersion, setMinTeleporterVersion] = useState("1");
+    const [tokenHomeAddress, setTokenHomeAddress] = useState("");
 
     const sourceL1 = useL1ByChainId(sourceChainId)();
     const sourceToolboxStore = getToolboxStore(sourceChainId)();
@@ -102,6 +104,11 @@ export default function DeployERC20TokenRemote() {
 
         fetchTokenDetails();
     }, [sourceChainId, sourceL1?.rpcUrl, sourceToolboxStore.erc20TokenHomeAddress]);
+
+    // Update tokenHomeAddress when sourceToolboxStore.erc20TokenHomeAddress changes
+    useEffect(() => {
+        setTokenHomeAddress(sourceToolboxStore.erc20TokenHomeAddress || "");
+    }, [sourceToolboxStore.erc20TokenHomeAddress]);
 
     async function handleDeploy() {
         setLocalError("");
@@ -173,10 +180,11 @@ export default function DeployERC20TokenRemote() {
                     This contract acts as the bridge endpoint for your ERC20 token from the source chain.
                 </div>
 
-                <Input
+                <EVMAddressInput
                     label="Teleporter Registry Address"
                     value={teleporterRegistryAddress}
                     onChange={setTeleporterRegistryAddress}
+                    disabled={isDeploying}
                 />
 
                 {!teleporterRegistryAddress && <Note variant="warning">
@@ -192,11 +200,12 @@ export default function DeployERC20TokenRemote() {
                     error={sourceChainError}
                 />
 
-                {sourceChainId && <Input
+                {sourceChainId && <EVMAddressInput
                     label={`Token Home Address on ${sourceL1?.name}`}
-                    value={sourceToolboxStore.erc20TokenHomeAddress || ""}
-                    disabled
-                    error={!sourceToolboxStore.erc20TokenHomeAddress ? `Please deploy the Token Home contract on ${sourceL1?.name} first` : undefined}
+                    value={tokenHomeAddress}
+                    onChange={setTokenHomeAddress}
+                    disabled={true}
+                    helperText={!sourceToolboxStore.erc20TokenHomeAddress ? `Please deploy the Token Home contract on ${sourceL1?.name} first` : undefined}
                 />}
 
                 {tokenHomeBlockchainIDHex && <Input
@@ -227,12 +236,11 @@ export default function DeployERC20TokenRemote() {
                     />
                 </div>
 
-                <Input
+                <EVMAddressInput
                     label="Teleporter Manager Address"
                     value={teleporterManager}
                     onChange={setTeleporterManager}
-                    placeholder={coreWalletClient?.account?.address}
-                    helperText="default: your address"
+                    disabled={isDeploying}
                 />
 
                 <Input

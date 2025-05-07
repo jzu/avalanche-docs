@@ -11,9 +11,10 @@ import { AbiEvent } from 'viem';
 import ValidatorManagerABI from "../../../contracts/icm-contracts/compiled/ValidatorManager.json";
 import { utils } from "@avalabs/avalanchejs";
 import SelectSubnetId from "../components/SelectSubnetId";
-
 import { Container } from "../components/Container";
 import { getSubnetInfo } from "../../coreViem/utils/glacier";
+import { EVMAddressInput } from "../components/EVMAddressInput";
+
 export default function Initialize() {
     const { showBoundary } = useErrorBoundary();
     const [proxyAddress, setProxyAddress] = useState<string>("");
@@ -51,23 +52,18 @@ export default function Initialize() {
         console.error('Error decoding subnetId:', error);
     }
 
-
     useEffect(() => {
         if (proxyAddress) {
             checkIfInitialized();
         }
     }, [proxyAddress]);
 
-    const [contractAddressError, setContractAddressError] = useState<string>("");
-
     useEffect(() => {
-        setContractAddressError("");
         if (!subnetId) return;
         getSubnetInfo(subnetId).then((subnetInfo) => {
             setProxyAddress(subnetInfo.l1ValidatorManagerDetails?.contractAddress || "");
         }).catch((error) => {
             console.error('Error getting subnet info:', error);
-            setContractAddressError((error as Error)?.message || "Unknown error");
         });
     }, [subnetId]);
 
@@ -94,7 +90,7 @@ export default function Initialize() {
                     abi: ValidatorManagerABI.abi,
                     functionName: 'admin'
                 });
-                
+
                 // If we get here without error, contract is initialized
                 setIsInitialized(true);
                 console.log('Contract is initialized, admin:', isInit);
@@ -178,12 +174,11 @@ export default function Initialize() {
         >
             <div className="space-y-4">
                 <div className="space-y-2">
-                    <Input
-                        label="Proxy address"
+                    <EVMAddressInput
+                        label="Proxy Address"
                         value={proxyAddress}
                         onChange={setProxyAddress}
-                        placeholder="Enter proxy address"
-                        error={contractAddressError}
+                        disabled={isInitializing}
                     />
                     <Button
                         variant="secondary"
@@ -224,10 +219,11 @@ export default function Initialize() {
                         onChange={setMaximumChurnPercentage}
                         placeholder="Enter maximum churn percentage"
                     />
-                    <Input
+                    <EVMAddressInput
                         label="Admin Address"
                         value={adminAddress}
                         onChange={setAdminAddress}
+                        disabled={isInitializing}
                         placeholder="Enter admin address"
                     />
                     <Button
