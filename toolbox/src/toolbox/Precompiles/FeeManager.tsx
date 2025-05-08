@@ -9,6 +9,7 @@ import { Container } from "../components/Container";
 import { ResultField } from "../components/ResultField";
 import feeManagerAbi from "../../../contracts/precompiles/FeeManager.json";
 import { AllowlistComponent } from "../components/AllowListComponents";
+import { CheckPrecompile } from "../components/CheckPrecompile";
 
 // Default Fee Manager address
 const DEFAULT_FEE_MANAGER_ADDRESS =
@@ -211,8 +212,6 @@ const InputWithValidation = ({
 export default function FeeManager() {
   const { coreWalletClient, publicClient, walletEVMAddress } = useWalletStore();
   const viemChain = useViemChainStore();
-
-  // Fee config state
   const [gasLimit, setGasLimit] = useState<string>("20000000");
   const [targetBlockRate, setTargetBlockRate] = useState<string>("2");
   const [minBaseFee, setMinBaseFee] = useState<string>("25000000000"); // 25 gwei
@@ -397,7 +396,10 @@ export default function FeeManager() {
   );
 
   return (
-    <div className="space-y-6">
+    <CheckPrecompile
+      configKey="feeManagerConfig"
+      precompileName="Fee Manager"
+    >
       <Container
         title="Fee Configuration"
         description="Configure the dynamic fee parameters for the chain."
@@ -526,12 +528,10 @@ export default function FeeManager() {
         </div>
       </Container>
 
-      <div className="w-full">
-        <AllowlistComponent
-          precompileAddress={DEFAULT_FEE_MANAGER_ADDRESS}
-          precompileType="Fee Manager"
-        />
-      </div>
-    </div>
+      <AllowlistComponent
+        precompileAddress={DEFAULT_FEE_MANAGER_ADDRESS}
+        precompileType="Fee Manager"
+      />
+    </CheckPrecompile>
   );
 }
