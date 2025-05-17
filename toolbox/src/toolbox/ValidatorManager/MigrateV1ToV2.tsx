@@ -32,7 +32,7 @@ export default function MigrateV1ToV2() {
   // Validation functions
   const validateInputs = () => {
     let isValid = true;
-    
+
     // Validate validationID (bytes32)
     if (!validationID) {
       setValidationIDError("Validation ID is required");
@@ -43,7 +43,7 @@ export default function MigrateV1ToV2() {
     } else {
       setValidationIDError(null);
     }
-    
+
     // Validate receivedNonce (uint32)
     if (!receivedNonce) {
       setReceivedNonceError("Received nonce is required");
@@ -54,7 +54,7 @@ export default function MigrateV1ToV2() {
     } else {
       setReceivedNonceError(null);
     }
-    
+
     // Validate validatorManagerAddress
     if (!localValidatorManagerAddress) {
       setAddressError("Validator Manager address is required");
@@ -65,7 +65,7 @@ export default function MigrateV1ToV2() {
     } else {
       setAddressError(null);
     }
-    
+
     return isValid;
   };
 
@@ -127,13 +127,21 @@ export default function MigrateV1ToV2() {
   return (
     <Container
       title="Migrate Validator from V1 to V2"
-      description="Migrate validators from the V1 contract to the V2 contract"
+      description="Migrate validators from the Validator Manager contract v1 to v2"
     >
       <div className="space-y-6">
+        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md text-sm mb-4">
+          <p className="mb-2"><strong>Note:</strong> This tool is only required if your L1 has the Validator Manager contract version 1 deployed. If you have deployed the Validator Manager contract with this Toolbox, it is already the version 2. In this case you don't need to do this!</p>
+        </div>
         <div>
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-            This tool allows you to migrate a validator from the V1 contract to the V2 contract. 
-            You need to provide the validation ID, the latest nonce received from the P-Chain, 
+            This tool allows you to migrate a validator from the V1 contract to the V2 contract. Before using this tool, ensure that you have the following:
+            <ul>
+              <li>Deploy the  Messages Library and Validator Manager v2 using the tools in this toolbox</li>
+              <li>Upgrade the Proxy to point to the Validator Manager v2 contract address</li>
+              <li>Use this tool to migrate every validator using the validationID</li>
+            </ul>
+            You need to provide the validation ID, the latest nonce received from the P-Chain,
             and the address of the Validator Manager contract.
           </p>
         </div>
@@ -161,7 +169,6 @@ export default function MigrateV1ToV2() {
           <Input
             id="receivedNonce"
             label="Received Nonce"
-            placeholder="0"
             value={receivedNonce}
             onChange={setReceivedNonce}
             helperText="The latest nonce received from the P-Chain"
