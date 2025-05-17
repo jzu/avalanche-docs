@@ -12,12 +12,11 @@ import { WalletRequiredPrompt } from "../WalletRequiredPrompt"
 import { ConnectWalletPrompt } from "./ConnectWalletPrompt"
 import { RemountOnWalletChange } from "../RemountOnWalletChange"
 import { avalanche, avalancheFuji } from "viem/chains"
-import InterchainTransfer from "../InterchainTransfer"
 import { ExplorerButton } from "./ExplorerButton"
 import { PChainExplorerButton } from "./PChainExplorerButton"
 import { ChainSelector } from "./ChainSelector"
 import { PChainFaucet } from "./PChainFaucet"
-
+import { PChainBridgeButton } from "./PChainBridgeButton"
 
 export type WalletModeRequired = "l1" | "c-chain" | "testnet-mainnet"
 export type WalletMode = "optional" | WalletModeRequired
@@ -275,16 +274,12 @@ export const ConnectWallet = ({
     const showL1SelectedBadge = walletMode === "c-chain" ? true : !!walletChainId; // If forcing C-Chain, it's "selected" for display purposes
 
     const showPChainCard = walletMode === "c-chain";
-    const showInterchainArrows = showPChainCard && isActuallyCChainSelected;
 
     let gridLayoutClass = "md:grid-cols-1";
-    if (showPChainCard && showInterchainArrows) {
-        gridLayoutClass = "md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]";
-    } else if (showPChainCard) {
+    if (showPChainCard) {
         gridLayoutClass = "md:grid-cols-2";
     }
 
-    const glowConditionL1Balance = walletMode === "c-chain" ? cChainBalance : l1Balance;
     const displayedEvmChainId = walletMode === "c-chain" ? (isTestnet ? avalancheFuji.id : avalanche.id) : walletChainId;
 
     // Server-side rendering placeholder
@@ -381,7 +376,7 @@ export const ConnectWallet = ({
                                                     }`}
                                                 title="Open faucet"
                                             >
-                                                Get tokens
+                                                Faucet
                                             </button>
                                         )}
                                     </div>
@@ -402,17 +397,12 @@ export const ConnectWallet = ({
                                     </div>
                                 </div>
 
-                                {/* Arrows between cards */}
-                                {showInterchainArrows && (
-                                    <InterchainTransfer glow={pChainBalance < LOW_BALANCE_THRESHOLD && glowConditionL1Balance > LOW_BALANCE_THRESHOLD} />
-                                )}
-
                                 {/* P-Chain */}
                                 {showPChainCard && (
                                     <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700 h-full">
                                         <div className="flex justify-between items-start mb-2">
                                             <div>
-                                            <span className="text-zinc-600 dark:text-zinc-400 text-sm font-medium">P-Chain</span>
+                                                <span className="text-zinc-600 dark:text-zinc-400 text-sm font-medium">P-Chain</span>
                                                 <PChainExplorerButton />
                                             </div>
                                             <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full">Always Connected</span>
@@ -427,14 +417,16 @@ export const ConnectWallet = ({
                                             >
                                                 <RefreshCw className={`w-4 h-4 text-zinc-600 dark:text-zinc-300 ${isPChainBalanceLoading ? 'animate-spin' : ''}`} />
                                             </button>
-                                        {pChainAddress && (
-                                            <PChainFaucet
-                                                pChainAddress={pChainAddress}
-                                                pChainBalance={pChainBalance}
-                                                updatePChainBalance={updatePChainBalance}
-                                                isTestnet={isTestnet ?? false}
-                                            />
-                                        )}
+                                            {pChainAddress && (<>
+                                                <PChainFaucet
+                                                    pChainAddress={pChainAddress}
+                                                    pChainBalance={pChainBalance}
+                                                    updatePChainBalance={updatePChainBalance}
+                                                    isTestnet={isTestnet ?? false}
+                                                />
+                                                <PChainBridgeButton />
+                                            </>
+                                            )}
                                         </div>
 
                                         <div className="flex items-center justify-between">
