@@ -369,12 +369,7 @@ export const ConnectWallet = ({
 
                                         <div className="flex gap-2">
                                             {pChainAddress && (<>
-                                                <PChainFaucetButton
-                                                    pChainAddress={pChainAddress}
-                                                    pChainBalance={pChainBalance}
-                                                    updatePChainBalance={updatePChainBalance}
-                                                    isTestnet={isTestnet ?? false}
-                                                />
+                                                <PChainFaucetButton/>
                                                 <PChainBridgeButton />
                                                 <PChainExplorerButton />
                                             </>

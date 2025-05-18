@@ -9,20 +9,13 @@ import {
     AlertDialogHeader, 
     AlertDialogTitle 
 } from "../AlertDialog"
+import { useWalletStore } from "../../stores/walletStore";
 
 const LOW_BALANCE_THRESHOLD = 0.5
 
-export const PChainFaucetButton = ({
-    pChainAddress,
-    pChainBalance,
-    updatePChainBalance,
-    isTestnet
-}: {
-    pChainAddress: string;
-    pChainBalance: number;
-    updatePChainBalance: () => void;
-    isTestnet: boolean;
-}) => {
+export const PChainFaucetButton = () => {
+        const {pChainAddress, isTestnet, pChainBalance, updatePChainBalance } = useWalletStore();
+
     const [isRequestingPTokens, setIsRequestingPTokens] = useState(false);
     const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
     const [alertDialogTitle, setAlertDialogTitle] = useState("Error");
