@@ -122,7 +122,6 @@ export function useSelectedL1() {
     );
 }
 
-
 export function useL1ByChainId(chainId: string) {
     const l1ListStore = useL1ListStore();
 

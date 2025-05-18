@@ -3,25 +3,28 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useErrorBoundary } from "react-error-boundary"
-import { Copy, RefreshCw } from "lucide-react"
+import { Globe } from "lucide-react"
 import { createCoreWalletClient } from "../../coreViem"
 import { networkIDs } from "@avalabs/avalanchejs"
 import { useWalletStore } from "../../stores/walletStore"
-import { useSelectedL1, useL1ByChainId } from "../../stores/l1ListStore"
+import { useL1ByChainId, useSelectedL1 } from "../../stores/l1ListStore"
 import { WalletRequiredPrompt } from "../WalletRequiredPrompt"
 import { ConnectWalletPrompt } from "./ConnectWalletPrompt"
 import { RemountOnWalletChange } from "../RemountOnWalletChange"
 import { avalanche, avalancheFuji } from "viem/chains"
-import { ExplorerButton } from "./ExplorerButton"
+import { L1ExplorerButton } from "./L1ExplorerButton"
 import { PChainExplorerButton } from "./PChainExplorerButton"
 import { ChainSelector } from "./ChainSelector"
-import { PChainFaucet } from "./PChainFaucet"
+import { PChainFaucetButton } from "./PChainFaucetButton"
 import { PChainBridgeButton } from "./PChainBridgeButton"
+import { L1DetailsModal } from "./L1DetailsModal"
+import { L1FaucetButton } from "./L1FaucetButton"
+import { TestnetMainnetSwitch } from "./TestnetMainnetSwitch"
+import TokenBalance from "./TokenBalance"
+import { AddressCopy } from "./AddressCopy"
 
 export type WalletModeRequired = "l1" | "c-chain" | "testnet-mainnet"
 export type WalletMode = "optional" | WalletModeRequired
-
-const LOW_BALANCE_THRESHOLD = 0.5
 
 export const OptionalConnectWallet = ({
     children,
@@ -67,10 +70,6 @@ export const ConnectWallet = ({
     const updateL1Balance = useWalletStore(state => state.updateL1Balance);
     const updateCChainBalance = useWalletStore(state => state.updateCChainBalance);
 
-    const isPChainBalanceLoading = useWalletStore(state => state.isPChainBalanceLoading);
-    const isL1BalanceLoading = useWalletStore(state => state.isL1BalanceLoading);
-    const isCChainBalanceLoading = useWalletStore(state => state.isCChainBalanceLoading);
-
     const [hasWallet, setHasWallet] = useState<boolean>(false)
     const [isClient, setIsClient] = useState<boolean>(false)
     const pChainBalance = useWalletStore(state => state.pChainBalance);
@@ -86,7 +85,6 @@ export const ConnectWallet = ({
 
     // Now, conditionally use the results of the unconditional hook calls.
     const selectedL1 = walletMode === "c-chain" ? l1ByChainIdForCChainMode : selectedL1FromStore;
-    const faucetUrl = selectedL1?.faucetUrl;
 
     // Set isClient to true once component mounts (client-side only)
     useEffect(() => {
@@ -254,13 +252,6 @@ export const ConnectWallet = ({
         }
     }
 
-    const copyToClipboard = (text: string) => {
-        if (isClient) {
-            navigator.clipboard.writeText(text)
-        }
-    }
-
-
     // Determine what to display based on props
     const isActuallyCChainSelected = walletChainId === avalanche.id || walletChainId === avalancheFuji.id;
 
@@ -269,7 +260,6 @@ export const ConnectWallet = ({
     const displayedL1TokenSymbol = (walletMode === "c-chain" || isActuallyCChainSelected) ? "AVAX" : "Tokens";
     const displayedL1Address = walletEVMAddress;
     const updateDisplayedL1Balance = walletMode === "c-chain" ? updateCChainBalance : updateL1Balance;
-    const isDisplayedL1BalanceLoading = walletMode === "c-chain" ? isCChainBalanceLoading : isL1BalanceLoading;
 
     const showL1SelectedBadge = walletMode === "c-chain" ? true : !!walletChainId; // If forcing C-Chain, it's "selected" for display purposes
 
@@ -309,140 +299,89 @@ export const ConnectWallet = ({
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-md rounded-xl p-4 relative overflow-hidden">
                     {/* Core Wallet header */}
                     <div className="flex items-center justify-between mt-2 mb-2">
-                        <div className="flex items-center space-x-2">
-                            <img src="/core-logo.svg" alt="Core Logo" className="h-10 w-auto mt-1 mb-1 dark:hidden" />
-                            <img src="/core-logo-dark.svg" alt="Core Logo" className="h-10 w-auto mt-1 mb-1 hidden dark:block" />
-                        </div>
-
-
-                        <div className="rounded-full overflow-hidden flex bg-zinc-100 dark:bg-zinc-800/70 p-0.5">
-                            <button
-                                onClick={() => coreWalletClient.switchChain({ id: avalancheFuji.id })}
-                                className={`px-4 py-1 text-sm rounded-full transition-colors ${isTestnet
-                                    ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 font-bold'
-                                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                                    }`}
-                            >
-                                Testnet
-                            </button>
-                            <button
-                                onClick={() => coreWalletClient.switchChain({ id: avalanche.id })}
-                                className={`px-4 py-1 text-sm rounded-full transition-colors ${!isTestnet
-                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 font-bold'
-                                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                                    }`}
-                            >
-                                Mainnet
-                            </button>
-                        </div>
+                        <CoreLogo />
+                        <TestnetMainnetSwitch />
                     </div>
 
                     {/* Chain cards */}
                     {walletMode !== "testnet-mainnet" && (
                         <>
                             <div className={`grid grid-cols-1 gap-4 items-center mt-4 mb-4 ${gridLayoutClass}`}>
+
                                 {/* L1 Chain Card */}
-                                <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700 h-full">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div>
-                                            <span className="text-zinc-600 dark:text-zinc-400 text-sm font-medium">
+                                <div className="flex flex-col gap-2 bg-zinc-50 dark:bg-zinc-800 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700 h-full">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex-shrink-0 w-10 h-10 rounded-md overflow-hidden flex items-center justify-center">
+                                                {selectedL1?.logoUrl ? (
+                                                    <img src={selectedL1.logoUrl} alt={`${selectedL1.name} logo`} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <Globe className="w-6 h-6 text-zinc-400 dark:text-zinc-500" />
+                                                )}
+                                            </div>
+                                            <span className="text-zinc-600 dark:text-zinc-400 text-xl font-medium">
                                                 {displayedL1ChainName}
                                             </span>
-                                            <ExplorerButton
-                                                rpcUrl={rpcUrl}
-                                                evmChainId={displayedEvmChainId}
-                                            />
+
                                         </div>
                                         {showL1SelectedBadge && (
                                             <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full">Selected</span>
                                         )}
                                     </div>
-                                    <div className="text-2xl font-semibold text-zinc-800 dark:text-zinc-100 mb-2 flex items-center">
-                                        {displayedL1Balance.toFixed(2)} {displayedL1TokenSymbol}
-                                        <button
-                                            onClick={updateDisplayedL1Balance}
-                                            className="ml-2 p-1 rounded-md bg-zinc-100 dark:bg-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                            title="Refresh balance"
-                                            disabled={isDisplayedL1BalanceLoading}
-                                        >
-                                            <RefreshCw className={`w-4 h-4 text-zinc-600 dark:text-zinc-300 ${isDisplayedL1BalanceLoading ? 'animate-spin' : ''}`} />
-                                        </button>
-                                        {faucetUrl && (
-                                            <button
-                                                onClick={() => window.open(faucetUrl, "_blank")}
-                                                className={`ml-2 px-2 py-1 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors ${displayedL1Balance < LOW_BALANCE_THRESHOLD
-                                                    ? "shimmer"
-                                                    : ""
-                                                    }`}
-                                                title="Open faucet"
-                                            >
-                                                Faucet
-                                            </button>
-                                        )}
+
+                                    <TokenBalance
+                                        balance={displayedL1Balance}
+                                        symbol={displayedL1TokenSymbol}
+                                        onClick={updateDisplayedL1Balance}
+                                    />
+
+                                    <div className="flex gap-2">
+                                        {selectedL1 && <L1FaucetButton blockchainId={selectedL1.id} displayedL1Balance={displayedL1Balance} />}
+                                        {selectedL1 && <L1DetailsModal blockchainId={selectedL1.id} />}
+                                        <L1ExplorerButton
+                                            rpcUrl={rpcUrl}
+                                            evmChainId={displayedEvmChainId}
+                                        />
                                     </div>
-                                    {/* EVM Address inside the card */}
-                                    <div className="flex items-center justify-between">
-                                        <div className="font-mono text-xs text-zinc-700 dark:text-black bg-zinc-100 dark:bg-zinc-300 px-3 py-1.5 rounded-md overflow-x-auto shadow-sm border border-zinc-200 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-200 transition-colors flex-1 mr-2 truncate">
-                                            {displayedL1Address ? displayedL1Address : "Loading..."}
-                                        </div>
-                                        {displayedL1Address && (
-                                            <button
-                                                onClick={() => copyToClipboard(displayedL1Address)}
-                                                className="p-1.5 rounded-md bg-zinc-100 dark:bg-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-200 transition-colors border border-zinc-200 dark:border-zinc-600 shadow-sm"
-                                                title="Copy address"
-                                            >
-                                                <Copy className="w-3.5 h-3.5 text-zinc-600 dark:text-black" />
-                                            </button>
-                                        )}
-                                    </div>
+
+                                    <AddressCopy address={displayedL1Address} />
                                 </div>
 
                                 {/* P-Chain */}
                                 {showPChainCard && (
-                                    <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700 h-full">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <div>
-                                                <span className="text-zinc-600 dark:text-zinc-400 text-sm font-medium">P-Chain</span>
-                                                <PChainExplorerButton />
+                                    <div className="flex flex-col gap-2 bg-zinc-50 dark:bg-zinc-800 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700 h-full">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex-shrink-0 w-10 h-10 rounded-md overflow-hidden flex items-center justify-center">
+                                                    <img src="https://images.ctfassets.net/gcj8jwzm6086/42aMwoCLblHOklt6Msi6tm/1e64aa637a8cead39b2db96fe3225c18/pchain-square.svg" alt="P-Chain Logo" className="w-full h-full object-cover" />
+                                                </div>
+                                                <span className="text-zinc-600 dark:text-zinc-400 text-xl font-medium">P-Chain</span>
+
                                             </div>
                                             <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full">Always Connected</span>
                                         </div>
-                                        <div className="text-2xl font-semibold text-zinc-800 dark:text-zinc-100 mb-2 flex items-center">
-                                            {pChainBalance.toFixed(2)} AVAX
-                                            <button
-                                                onClick={updatePChainBalance}
-                                                className="ml-2 p-1 rounded-md bg-zinc-100 dark:bg-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                title="Refresh balance"
-                                                disabled={isPChainBalanceLoading}
-                                            >
-                                                <RefreshCw className={`w-4 h-4 text-zinc-600 dark:text-zinc-300 ${isPChainBalanceLoading ? 'animate-spin' : ''}`} />
-                                            </button>
+
+                                        <TokenBalance
+                                            balance={pChainBalance}
+                                            symbol="AVAX"
+                                            onClick={updatePChainBalance}
+                                        />
+
+                                        <div className="flex gap-2">
                                             {pChainAddress && (<>
-                                                <PChainFaucet
+                                                <PChainFaucetButton
                                                     pChainAddress={pChainAddress}
                                                     pChainBalance={pChainBalance}
                                                     updatePChainBalance={updatePChainBalance}
                                                     isTestnet={isTestnet ?? false}
                                                 />
                                                 <PChainBridgeButton />
+                                                <PChainExplorerButton />
                                             </>
                                             )}
                                         </div>
 
-                                        <div className="flex items-center justify-between">
-                                            <div className="font-mono text-xs text-zinc-700 dark:text-black bg-zinc-100 dark:bg-zinc-300 px-3 py-1.5 rounded-md overflow-x-auto shadow-sm border border-zinc-200 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-200 transition-colors flex-1 mr-2 truncate">
-                                                {pChainAddress ? pChainAddress : "Loading..."}
-                                            </div>
-                                            {pChainAddress && (
-                                                <button
-                                                    onClick={() => copyToClipboard(pChainAddress)}
-                                                    className="p-1.5 rounded-md bg-zinc-100 dark:bg-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-200 transition-colors border border-zinc-200 dark:border-zinc-600 shadow-sm"
-                                                    title="Copy address"
-                                                >
-                                                    <Copy className="w-3.5 h-3.5 text-zinc-600 dark:text-black" />
-                                                </button>
-                                            )}
-                                        </div>
+                                        <AddressCopy address={pChainAddress} />
                                     </div>
                                 )}
                             </div>
@@ -463,3 +402,10 @@ export const ConnectWallet = ({
         </div>
     )
 }
+
+const CoreLogo = () => (
+    <div className="flex items-center space-x-2">
+        <img src="/core-logo.svg" alt="Core Logo" className="h-10 w-auto mt-1 mb-1 dark:hidden" />
+        <img src="/core-logo-dark.svg" alt="Core Logo" className="h-10 w-auto mt-1 mb-1 hidden dark:block" />
+    </div>
+)
