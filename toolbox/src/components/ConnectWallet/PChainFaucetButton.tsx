@@ -14,7 +14,7 @@ import { useWalletStore } from "../../stores/walletStore";
 const LOW_BALANCE_THRESHOLD = 0.5
 
 export const PChainFaucetButton = () => {
-        const {pChainAddress, isTestnet, pChainBalance, updatePChainBalance } = useWalletStore();
+    const {pChainAddress, isTestnet, pChainBalance, updatePChainBalance } = useWalletStore();
 
     const [isRequestingPTokens, setIsRequestingPTokens] = useState(false);
     const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
@@ -107,9 +107,11 @@ export const PChainFaucetButton = () => {
             <button
                 onClick={handlePChainTokenRequest}
                 disabled={isRequestingPTokens}
-                className={`px-2 py-1 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors ${
-                    pChainBalance < LOW_BALANCE_THRESHOLD ? "shimmer" : ""
-                } ${isRequestingPTokens ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`px-2 py-1 text-xs font-medium text-white rounded transition-colors ${
+                    pChainBalance < LOW_BALANCE_THRESHOLD ? "bg-blue-500 hover:bg-blue-600 shimmer" : "bg-zinc-600 hover:bg-zinc-700"
+                } ${
+                    isRequestingPTokens ? "opacity-50 cursor-not-allowed" : ""
+                }`}
                 title="Get free P-Chain AVAX"
             >
                 {isRequestingPTokens ? "Requesting..." : "Faucet"}

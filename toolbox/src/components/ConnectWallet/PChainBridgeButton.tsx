@@ -209,7 +209,8 @@ export function PChainBridgeButton() {
                 <Dialog.Trigger asChild>
                     <button
                         onClick={() => setOpen(true)}
-                        className={`px-2 py-1 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors ${pChainBalance < LOW_BALANCE_THRESHOLD ? "shimmer" : ""
+                        className={`px-2 py-1 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors ${
+                            pChainBalance < LOW_BALANCE_THRESHOLD && cChainBalance > LOW_BALANCE_THRESHOLD ? "bg-blue-500 hover:bg-blue-600 shimmer" : "bg-zinc-600 hover:bg-zinc-700"
                         } ${open ? "opacity-50 cursor-not-allowed" : ""}`}
                         aria-label="Transfer C-Chain to P-Chain"
                     >
