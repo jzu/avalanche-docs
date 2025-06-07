@@ -489,8 +489,8 @@ export const baseOptions: BaseLayoutProps = {
     ),
   },
   links: [
-    docsMenu,
     academyMenu,
+    docsMenu,
     toolsMenu,
     grantsMenu,
     github,
