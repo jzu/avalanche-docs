@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Zap, Cpu, Code, Coins, Bot, Home } from 'lucide-react'
+import { ArrowRight, Zap, Cpu, Code, Coins, Bot } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
 
