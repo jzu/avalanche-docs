@@ -138,6 +138,9 @@ export async function getFilteredHackathons(options: GetHackathonsOptions) {
         where: filters,
         skip: offset,
         take: pageSize,
+        orderBy: {
+            start_date: 'desc'
+        }
     });
 
     const hackathons = hackathonList.map(getHackathonLite);
